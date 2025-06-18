@@ -118,9 +118,10 @@ async def tt(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("🚀 TikTok video download လုပ်နေပါပြီ... ခဏစောင့်ပါ...")
 
     try:
-        with TikTokApi() as api:
-            video = api.video(url=url)
-            video_data = video.bytes()
+        api = TikTokApi()
+
+        video = api.video(url=url)
+        video_data = video.bytes()
 
         os.makedirs("downloads", exist_ok=True)
         file_path = "downloads/tiktok_video.mp4"
