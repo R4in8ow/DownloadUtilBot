@@ -118,10 +118,11 @@ async def tt(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("🚀 TikTok video download လုပ်နေပါပြီ... ခဏစောင့်ပါ...")
 
     try:
-        api = TikTokApi()
+        api = TikTokApi(custom_verify_fp="your_verifyFp_here")
+        await api.async_init()
 
-        video = api.video(url=url)
-        video_data = video.bytes()
+        video = await api.video(url=url)
+        video_data = await video.bytes()
 
         os.makedirs("downloads", exist_ok=True)
         file_path = "downloads/tiktok_video.mp4"
@@ -137,6 +138,7 @@ async def tt(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     except Exception as e:
         await update.message.reply_text(f"❌ TikTok video download မအောင်မြင်ပါ: {str(e)}")
+
 
 # Main bot setup
 app = ApplicationBuilder().token(TOKEN).build()

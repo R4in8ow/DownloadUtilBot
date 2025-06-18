@@ -1,6 +1,6 @@
 python-telegram-bot==20.3
 yt-dlp
-TikTokApi
+TikTokApi>=5.6.1
 requests
 beautifulsoup4
 pillow
