@@ -1,3 +1,7 @@
 yt-dlp
 python-telegram-bot==20.3
 requests
+# The following libraries are optional but recommended for better performance and features
+beautifulsoup4
+lxml
+# If you want to use the Telegram Bot API with asyncio support
