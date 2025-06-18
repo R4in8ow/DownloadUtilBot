@@ -1,7 +1,12 @@
-yt-dlp
 python-telegram-bot==20.3
+yt-dlp
+TikTokApi
 requests
-# The following libraries are optional but recommended for better performance and features
 beautifulsoup4
-lxml
-# If you want to use the Telegram Bot API with asyncio support
+pillow
+# Optional dependencies
+# Uncomment the following lines if you want to use these features
+# python-dotenv
+# python-dotenv is used for loading environment variables from a .env file
+# python-dotenv==1.0.0
+# python-telegram-bot[webhook]
