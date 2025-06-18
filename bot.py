@@ -1,87 +1,62 @@
-from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 import yt_dlp
 import os
+from telegram import Update
+from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
 
-BOT_TOKEN = "7907611450:AAHgD3ebO0Pe8jXgOjY8Np-BKRdW9SKDa5s"
-
+# Start command
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "👋 Welcome to Smart Utility Bot!\n\n"
-        "Available Commands:\n"
-        "/yt <url>\n"
-        "/mp3 <url>\n"
-        "/fb <url>\n"
-        "/ig <url>\n"
-        "/tt <url>\n"
+        "မင်္ဂလာပါ! \n\n"
+        "သုံးနိုင်တဲ့ command တွေက:\n"
+        "/mp3 <youtube-url> \n"
+        "/start \n"
     )
 
-async def youtube(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if not context.args:
-        await update.message.reply_text("❌ Please provide YouTube URL.\nExample: /yt https://youtube.com/...")
-        return
-    url = context.args[0]
-    await update.message.reply_text(f"⬇️ Downloading YouTube video...\n{url}")
-
-    ydl_opts = {
-        'outtmpl': 'downloads/%(title)s.%(ext)s',
-        'format': 'bestvideo+bestaudio/best',
-        'merge_output_format': 'mp4',
-    }
-
-    os.makedirs('downloads', exist_ok=True)
-
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info = ydl.extract_info(url, download=True)
-        file_name = ydl.prepare_filename(info)
-
-    await update.message.reply_document(document=open(file_name, 'rb'))
-    os.remove(file_name)
-
+# MP3 download command
 async def mp3(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if not context.args:
-        await update.message.reply_text("❌ Please provide YouTube URL.\nExample: /mp3 https://youtube.com/...")
+    url = context.args[0] if context.args else None
+    if not url:
+        await update.message.reply_text("❌ YouTube URL တစ်ခု ထည့်ပေးပါ။ ဥပမာ: /mp3 https://youtube.com/xxxxxx")
         return
-    url = context.args[0]
-    await update.message.reply_text(f"🎵 Downloading MP3...\n{url}")
+
+    await update.message.reply_text("🚀 mp3 ဖိုင်ကို download လုပ်နေပါပြီ... ခဏစောင့်ပါ...")
 
     ydl_opts = {
-        'outtmpl': 'downloads/%(title)s.%(ext)s',
         'format': 'bestaudio/best',
         'postprocessors': [{
             'key': 'FFmpegExtractAudio',
             'preferredcodec': 'mp3',
             'preferredquality': '192',
         }],
+        'outtmpl': 'downloads/%(title)s.%(ext)s',
+        'noplaylist': True,
     }
 
-    os.makedirs('downloads', exist_ok=True)
+    os.makedirs("downloads", exist_ok=True)
 
-    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-        info = ydl.extract_info(url, download=True)
-        file_name = ydl.prepare_filename(info).replace(".webm", ".mp3").replace(".m4a", ".mp3")
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(url, download=True)
+            filename = ydl.prepare_filename(info)
+            filename = filename.rsplit('.', 1)[0] + ".mp3"
 
-    await update.message.reply_audio(audio=open(file_name, 'rb'))
-    os.remove(file_name)
+        # Send audio file
+        with open(filename, 'rb') as audio_file:
+            await update.message.reply_audio(audio_file, title=info.get('title', 'mp3'))
 
-# Placeholders for Facebook, IG, TikTok (Later we can integrate external API)
-async def facebook(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("📹 Facebook download feature is under development.")
+        await update.message.reply_text("✅ mp3 ဖိုင်ပို့ပြီးပါပြီ။")
 
-async def instagram(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("📸 Instagram download feature is under development.")
+        # Optional: Clean up downloaded file
+        os.remove(filename)
 
-async def tiktok(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("🎵 TikTok download feature is under development.")
+    except Exception as e:
+        await update.message.reply_text(f"❌ Error: {str(e)}")
 
-if __name__ == '__main__':
-    app = ApplicationBuilder().token(BOT_TOKEN).build()
+# Setup the bot
+TOKEN = "7907611450:AAHgD3ebO0Pe8jXgOjY8Np-BKRdW9SKDa5s"
 
-    app.add_handler(CommandHandler('start', start))
-    app.add_handler(CommandHandler('yt', youtube))
-    app.add_handler(CommandHandler('mp3', mp3))
-    app.add_handler(CommandHandler('fb', facebook))
-    app.add_handler(CommandHandler('ig', instagram))
-    app.add_handler(CommandHandler('tt', tiktok))
+app = ApplicationBuilder().token(TOKEN).build()
+app.add_handler(CommandHandler("start", start))
+app.add_handler(CommandHandler("mp3", mp3))
 
-    app.run_polling()
+app.run_polling()
